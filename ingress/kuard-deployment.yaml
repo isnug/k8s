@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: kuard
+  name: kuard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kuard
+  template:
+    metadata:
+      labels:
+        app: kuard
+        run: kuard
+    spec:
+      containers:
+       - name: kuard
+         image: gcr.io/kuar-demo/kuard-amd64:1
+         imagePullPolicy: Always
+         command:
+           - "/kuard"
+           - "$(EXTRA_PARAM)"
+         ports:
+           - containerPort: 8080
+             name: http
+             protocol: TCP

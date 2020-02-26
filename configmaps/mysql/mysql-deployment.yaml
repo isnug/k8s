@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mysql
+  name: mysql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: mysql
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-root-password
+                key: password
+        envFrom:
+        - secretRef:
+            name: mysql-user-creds
+        ports:
+        - containerPort: 3306
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-volume-1
+        - mountPath: /etc/mysql/conf.d
+          name: mysql-config-volume
+      volumes:
+      - emptyDir: {}
+        name: mysql-volume-1
+      - configMap:
+          name: mysql-config
+          items:
+            - key: my.cnf
+              path: my.cnf
+        name: mysql-config-volume

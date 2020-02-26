@@ -1,0 +1,67 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  labels:
+    app: database
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: database
+    tier: postgreSQL
+  clusterIP: None
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-claim
+  labels:
+    app: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  labels:
+    app: database
+spec:
+  selector:
+    matchLabels:
+      app: database
+      tier: postgreSQL
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: database
+        tier: postgreSQL
+    spec:
+      containers:
+        - image: postgres:9.6.16
+          name: postgresql
+          env:
+            - name: POSTGRES_USER
+              value: drupal
+            - name: POSTGRES_DB
+              value: drupal_production
+            - name: POSTGRES_PASSWORD
+              value: kampret123
+          ports:
+            - containerPort: 5432
+              name: postgresql
+          volumeMounts:
+            - name: postgresql
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgresql
+          persistentVolumeClaim:
+            claimName: postgres-claim
